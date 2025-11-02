@@ -1,0 +1,202 @@
+// Initialize variables
+let currentStep = 1;
+const totalSteps = 6;
+let userName = "My Love";
+let currentSlide = 0;
+const slides = document.querySelectorAll('.carousel-slide'); // Need to define this later in DOMContentLoaded
+
+// (particlesJS initialization remains the same)
+
+// Initialize GSAP animations and DOM setup
+document.addEventListener('DOMContentLoaded', function() {
+    showStep(currentStep);
+    createPetals();
+    
+    // Animate the heart message
+    const heartMessage = document.getElementById('heartMessage');
+    document.getElementById('interactiveHeart').addEventListener('click', function() {
+        setTimeout(() => {
+            heartMessage.classList.add('show');
+        }, 500);
+    });
+    
+    // Set countdown (example: next 24 hours)
+    setCountdown();
+
+    // Initialize carousel on step 5
+    if (document.getElementById('memoryCarousel')) {
+        showSlide(currentSlide);
+    }
+});
+
+
+// Function to show current step (remains largely the same, but without creating firework interval)
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.step').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // Show current step
+    const currentStepEl = document.getElementById(`step${step}`);
+    currentStepEl.classList.add('active');
+    
+    // Update progress bar
+    const progressPercentage = ((step - 1) / (totalSteps - 1)) * 100;
+    gsap.to("#progressBar", {
+        width: `${progressPercentage}%`,
+        duration: 1,
+        ease: "power2.out"
+    });
+    
+    // Special animations for each step
+    switch(step) {
+        case 1:
+            // Animate only the elements in step 1
+            gsap.from("#step1 img", {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "back.out(1.7)"
+            });
+            break;
+        case 2:
+            // Animate input
+            gsap.from(".name-input", {
+                scale: 0.5,
+                opacity: 0,
+                duration: 0.8,
+                ease: "elastic.out(1, 0.5)"
+            });
+            break;
+        case 3:
+            // Animate heart
+            gsap.from("#interactiveHeart", {
+                scale: 0.5,
+                rotation: 180,
+                duration: 1,
+                ease: "elastic.out(1, 0.5)"
+            });
+            document.getElementById('heartName').textContent = userName;
+            break;
+        case 4:
+            // Type out message
+            typeMessage();
+            // Animate photo frame
+            gsap.from(".photo-frame", {
+                y: 50,
+                rotation: -10,
+                opacity: 0,
+                duration: 1,
+                ease: "back.out(1.7)"
+            });
+            break;
+        case 5:
+            // Initialize and animate carousel
+            showSlide(currentSlide);
+            gsap.from(".carousel-slide", {
+                opacity: 0,
+                duration: 1,
+                ease: "power2.out"
+            });
+            break;
+        case 6:
+            // Create fireworks
+            createFireworks();
+            // Animate signature
+            gsap.from(".signature", {
+                x: 100,
+                opacity: 0,
+                duration: 1,
+                delay: 0.5
+            });
+            break;
+    }
+}
+
+// (nextStep, saveName, createHearts, createPetals, typeMessage, createFireworks functions remain the same)
+
+
+// --- Enhanced Step 5: Carousel Logic ---
+
+// Function to show a specific slide
+function showSlide(index) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    if (index >= slides.length) {
+        currentSlide = 0;
+    } else if (index < 0) {
+        currentSlide = slides.length - 1;
+    } else {
+        currentSlide = index;
+    }
+
+    const carousel = document.getElementById('memoryCarousel');
+    // Calculate the amount to translate to show the current slide
+    const translateValue = -currentSlide * 100 / slides.length; 
+    
+    gsap.to(carousel, {
+        x: `${translateValue}%`,
+        duration: 0.6,
+        ease: "power3.inOut"
+    });
+    
+    // Animate the polaroid in the current view
+    slides.forEach(slide => slide.querySelector('.polaroid').style.transform = 'rotate(-5deg)');
+    gsap.to(slides[currentSlide].querySelector('.polaroid'), {
+        rotation: 0,
+        scale: 1.05,
+        duration: 0.5,
+        ease: "back.out(1.7)"
+    });
+}
+
+function nextSlide() {
+    showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+    showSlide(currentSlide - 1);
+}
+
+
+// --- Enhanced Step 6: Countdown Timer Logic ---
+
+// Function to set countdown
+function setCountdown() {
+    // *** USER: SET YOUR TARGET DATE HERE ***
+    // Example: New Date(Year, Month-1, Day, Hour, Minute, Second)
+    // Example for a specific date: new Date(2025, 10, 15, 18, 0, 0); 
+    // Example for 24 hours from now (current behavior):
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 1); // Set to 24 hours from now for demonstration
+
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const diff = targetDate.getTime() - now;
+        
+        const countdownContainer = document.querySelector('.countdown-container h3');
+        const countdownDisplay = document.querySelector('.countdown');
+
+        if (diff <= 0) {
+            countdownContainer.textContent = "🥳 The Moment Is Here! 🥳";
+            countdownDisplay.innerHTML = ""; // Clear the timer display
+            return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
+
+// (shareOnSocial function remains the same)
